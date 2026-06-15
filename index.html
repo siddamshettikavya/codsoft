@@ -1,0 +1,1499 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Job Board Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    :root {
+      --bg: #07111f;
+      --bg-soft: #0c1c31;
+      --panel: rgba(9, 17, 31, 0.86);
+      --panel-strong: #0e1f37;
+      --line: rgba(255,255,255,0.10);
+      --text: #f7fbff;
+      --muted: #95a8c8;
+      --brand: #57d6ff;
+      --brand-2: #7c5cff;
+      --success: #30c28a;
+      --warning: #ffc857;
+      --danger: #ff6b81;
+      --shadow: 0 24px 80px rgba(0,0,0,0.40);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(87, 214, 255, 0.16), transparent 25%),
+        radial-gradient(circle at top right, rgba(124, 92, 255, 0.18), transparent 28%),
+        linear-gradient(180deg, #050c17 0%, #0b1627 100%);
+      color: var(--text);
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; border: none; }
+
+    .shell {
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .page {
+      width: min(1240px, 100%);
+      margin: 0 auto;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(145deg, rgba(10,22,39,0.92), rgba(14,30,52,0.86));
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: auto -80px -100px auto;
+      width: 260px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(87,214,255,0.26), transparent 68%);
+      filter: blur(6px);
+      pointer-events: none;
+    }
+
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-mark {
+      width: 52px;
+      height: 52px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(145deg, var(--brand), var(--brand-2));
+      box-shadow: 0 18px 34px rgba(87,214,255,0.28);
+      font-weight: 800;
+      color: #02101a;
+      letter-spacing: 0.04em;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(1.4rem, 2vw, 2rem);
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .chip {
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 12px 16px;
+      transition: transform 160ms ease, background 160ms ease, border-color 160ms ease;
+    }
+
+    .chip:hover {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,0.09);
+      border-color: rgba(87,214,255,0.35);
+    }
+
+    .chip.primary {
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      color: #03131f;
+      font-weight: 800;
+      border: none;
+    }
+
+    .hero-grid {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: 1.25fr 0.75fr;
+      gap: 18px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-card,
+    .panel,
+    .stat,
+    .job-card,
+    .auth-card,
+    .detail-card,
+    .notice-card {
+      background: linear-gradient(180deg, rgba(11,22,38,0.96), rgba(15,29,49,0.96));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card {
+      padding: 28px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(87,214,255,0.12);
+      color: #c8f5ff;
+      border: 1px solid rgba(87,214,255,0.18);
+      font-weight: 700;
+      font-size: 0.82rem;
+      letter-spacing: 0.02em;
+    }
+
+    .hero h2 {
+      margin: 18px 0 10px;
+      font-size: clamp(2.3rem, 4vw, 4.6rem);
+      line-height: 0.98;
+      letter-spacing: -0.05em;
+      max-width: 10ch;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 62ch;
+      line-height: 1.7;
+      font-size: 1rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 18px;
+      border-radius: 14px;
+      border: 1px solid transparent;
+      font-weight: 800;
+      transition: transform 160ms ease, opacity 160ms ease, border-color 160ms ease;
+    }
+
+    .button:hover { transform: translateY(-1px); }
+    .button.primary { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #061421; }
+    .button.ghost { background: rgba(255,255,255,0.05); color: var(--text); border-color: var(--line); }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .stat {
+      padding: 18px;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 1.5rem;
+      margin-bottom: 4px;
+    }
+
+    .stat span { color: var(--muted); font-size: 0.92rem; }
+
+    .layout {
+      margin-top: 22px;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 18px;
+    }
+
+    .panel {
+      padding: 20px;
+    }
+
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .section-head h3 {
+      margin: 0;
+      font-size: 1.2rem;
+    }
+
+    .section-head p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .field,
+    .select,
+    .textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 13px 14px;
+      outline: none;
+      transition: border-color 140ms ease, box-shadow 140ms ease;
+    }
+
+    .field:focus,
+    .select:focus,
+    .textarea:focus {
+      border-color: rgba(87,214,255,0.55);
+      box-shadow: 0 0 0 4px rgba(87,214,255,0.10);
+    }
+
+    .textarea { min-height: 130px; resize: vertical; }
+
+    .jobs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 14px;
+    }
+
+    .job-card,
+    .detail-card,
+    .auth-card,
+    .notice-card {
+      padding: 18px;
+    }
+
+    .job-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .job-title {
+      margin: 0;
+      font-size: 1.1rem;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .pill {
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--line);
+      color: #dbe8ff;
+      font-size: 0.82rem;
+    }
+
+    .job-actions,
+    .row-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .mini {
+      padding: 11px 14px;
+      border-radius: 12px;
+      font-weight: 800;
+    }
+
+    .mini.primary { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #07111e; }
+    .mini.ghost { background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid var(--line); }
+
+    .detail-card h3 { margin-top: 0; }
+    .detail-meta { color: var(--muted); line-height: 1.7; }
+    .divider {
+      height: 1px;
+      background: var(--line);
+      margin: 18px 0;
+    }
+
+    .stack { display: grid; gap: 12px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+
+    .small { font-size: 0.9rem; color: var(--muted); }
+    .success { color: #73efb2; }
+    .warning { color: #ffdf90; }
+    .danger { color: #ff8fa3; }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .tab {
+      padding: 12px 16px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      border: 1px solid var(--line);
+      font-weight: 700;
+    }
+
+    .tab.active {
+      background: linear-gradient(135deg, rgba(87,214,255,0.20), rgba(124,92,255,0.18));
+      border-color: rgba(87,214,255,0.24);
+    }
+
+    .notice-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .notice-card {
+      background: rgba(255,255,255,0.05);
+    }
+
+    .notice-card.unread {
+      border-color: rgba(87,214,255,0.36);
+      box-shadow: 0 0 0 1px rgba(87,214,255,0.08) inset;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      background: rgba(255,255,255,0.07);
+      color: #dce8ff;
+    }
+
+    .badge.success { background: rgba(48,194,138,0.16); color: #86f2bf; }
+    .badge.info { background: rgba(87,214,255,0.16); color: #8ef0ff; }
+    .badge.warning { background: rgba(255,200,87,0.16); color: #ffd98e; }
+
+    .hero-note {
+      margin-top: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .auth-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .footer-note {
+      text-align: center;
+      color: var(--muted);
+      margin: 18px 0 4px;
+      font-size: 0.92rem;
+    }
+
+    .alert {
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(87,214,255,0.18);
+      background: rgba(87,214,255,0.08);
+      color: #d8f8ff;
+      margin-bottom: 16px;
+    }
+
+    .alert.error {
+      border-color: rgba(255,107,129,0.20);
+      background: rgba(255,107,129,0.10);
+      color: #ffd0d9;
+    }
+
+    .resume {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(87,214,255,0.10);
+      color: #c8f7ff;
+      font-size: 0.8rem;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 980px) {
+      .hero-grid,
+      .layout,
+      .auth-grid,
+      .grid-2,
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .shell { padding: 14px; }
+      .hero { padding: 18px; border-radius: 24px; }
+      .hero h2 { font-size: 2.2rem; }
+      .panel, .detail-card, .auth-card, .job-card, .notice-card { padding: 16px; }
+      .brand { align-items: flex-start; }
+      .brand-mark { width: 46px; height: 46px; border-radius: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useEffect, useMemo, useState } = React;
+    const API = 'http://localhost:5001/api';
+    const DEMO = {
+      employer: { email: 'employer@demo.com', password: 'demo123' },
+      candidate: { email: 'candidate@demo.com', password: 'demo123' }
+    };
+
+    function App() {
+      const [view, setView] = useState('listings');
+      const [jobs, setJobs] = useState([]);
+      const [search, setSearch] = useState('');
+      const [selectedJobId, setSelectedJobId] = useState('');
+      const [token, setToken] = useState(localStorage.getItem('jobboard_token') || '');
+      const [savedJobIds, setSavedJobIds] = useState(() => {
+        try {
+          return JSON.parse(localStorage.getItem('jobboard_saved_jobs') || '[]');
+        } catch (error) {
+          return [];
+        }
+      });
+      const [user, setUser] = useState(null);
+      const [stats, setStats] = useState({ jobsPosted: 0, applications: 0, notifications: 0 });
+      const [applications, setApplications] = useState([]);
+      const [notifications, setNotifications] = useState([]);
+      const [message, setMessage] = useState('');
+
+      const selectedJob = useMemo(() => {
+        return jobs.find((job) => job._id === selectedJobId) || jobs[0] || null;
+      }, [jobs, selectedJobId]);
+
+      const apiFetch = async (endpoint, options = {}) => {
+        const headers = new Headers(options.headers || {});
+        if (token) {
+          headers.set('Authorization', `Bearer ${token}`);
+        }
+        const response = await fetch(`${API}${endpoint}`, { ...options, headers });
+        const text = await response.text();
+        const data = text ? JSON.parse(text) : {};
+        if (!response.ok) {
+          throw new Error(data.message || 'Request failed');
+        }
+        return data;
+      };
+
+      const loadJobs = async (query = '') => {
+        const params = query ? `?search=${encodeURIComponent(query)}` : '';
+        const data = await apiFetch(`/jobs${params}`);
+        setJobs(data);
+        if (!selectedJobId && data.length) {
+          setSelectedJobId(data[0]._id);
+        }
+      };
+
+      const loadSession = async () => {
+        if (!token) {
+          setUser(null);
+          setApplications([]);
+          setNotifications([]);
+          setStats({ jobsPosted: 0, applications: 0, notifications: 0 });
+          return;
+        }
+
+        const session = await apiFetch('/me');
+        setUser(session.user);
+        setStats(session.stats);
+        const [applicationData, notificationData] = await Promise.all([
+          apiFetch('/applications'),
+          apiFetch('/notifications')
+        ]);
+        setApplications(applicationData);
+        setNotifications(notificationData);
+      };
+
+      useEffect(() => {
+        loadJobs(search).catch((error) => setMessage(error.message));
+      }, [search]);
+
+      useEffect(() => {
+        loadSession().catch((error) => {
+          localStorage.removeItem('jobboard_token');
+          setToken('');
+          setMessage(error.message);
+        });
+      }, [token]);
+
+      const updateToken = (value) => {
+        setToken(value);
+        localStorage.setItem('jobboard_token', value);
+      };
+
+      const handleAuth = async ({ mode, payload }) => {
+        const result = await apiFetch(`/auth/${mode}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        updateToken(result.token);
+        setUser(result.user);
+        setMessage(mode === 'login' ? 'Signed in successfully.' : 'Account created successfully.');
+        await loadSession();
+        setView('listings');
+      };
+
+      const handleLogout = () => {
+        localStorage.removeItem('jobboard_token');
+        setToken('');
+        setUser(null);
+        setApplications([]);
+        setNotifications([]);
+        setStats({ jobsPosted: 0, applications: 0, notifications: 0 });
+        setMessage('Signed out.');
+      };
+
+      const handlePostJob = async (payload) => {
+        await apiFetch('/jobs', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        setMessage('Job posted successfully.');
+        await loadJobs(search);
+        if (user?.role === 'employer') {
+          await loadSession();
+        }
+      };
+
+      const handleApply = async (jobId, formValues) => {
+        const data = new FormData();
+        data.append('jobId', jobId);
+        data.append('applicantName', formValues.applicantName);
+        data.append('applicantEmail', formValues.applicantEmail);
+        data.append('coverLetter', formValues.coverLetter);
+        data.append('candidateId', user?._id || '');
+        if (formValues.resume) {
+          data.append('resume', formValues.resume);
+        }
+
+        const headers = new Headers();
+        if (token) {
+          headers.set('Authorization', `Bearer ${token}`);
+        }
+
+        const response = await fetch(`${API}/applications`, {
+          method: 'POST',
+          headers,
+          body: data
+        });
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.message || 'Application failed');
+        }
+        setMessage(result.message);
+        await loadSession();
+      };
+
+      const handleSaveProfile = async (payload) => {
+        await apiFetch('/me', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        setMessage('Profile updated.');
+        await loadSession();
+      };
+
+      const toggleSavedJob = (jobId) => {
+        setSavedJobIds((current) => {
+          const next = current.includes(jobId)
+            ? current.filter((id) => id !== jobId)
+            : [...current, jobId];
+          localStorage.setItem('jobboard_saved_jobs', JSON.stringify(next));
+          return next;
+        });
+      };
+
+      const isSavedJob = (jobId) => savedJobIds.includes(jobId);
+
+      const savedJobs = useMemo(() => jobs.filter((job) => savedJobIds.includes(job._id)), [jobs, savedJobIds]);
+
+      const jobCount = jobs.length;
+      const applicationCount = applications.length;
+      const notificationCount = notifications.filter((item) => !item.read).length;
+      const savedCount = savedJobs.length;
+
+      return (
+        <div className="shell">
+          <div className="page">
+            <section className="hero">
+              <div className="topbar">
+                <div className="brand">
+                  <div className="brand-mark">JB</div>
+                  <div>
+                    <h1>Job Board Demo</h1>
+                    <p>React + Node.js + MongoDB-ready job marketplace for employers and candidates.</p>
+                  </div>
+                </div>
+
+                <div className="nav">
+                  <button className="chip primary" onClick={() => setView('listings')}>Listings</button>
+                  <button className="chip" onClick={() => setView('detail')}>Job Detail</button>
+                  <button className="chip" onClick={() => setView('employer')}>Employer Dashboard</button>
+                  <button className="chip" onClick={() => setView('candidate')}>Candidate Dashboard</button>
+                  <button className="chip" onClick={() => setView('saved')}>Saved Jobs</button>
+                  <button className="chip" onClick={() => setView('notifications')}>Notifications</button>
+                  <button className="chip" onClick={() => setView('analytics')}>Analytics</button>
+                  <button className="chip" onClick={() => setView('about')}>About</button>
+                  <button className="chip" onClick={() => setView('contact')}>Contact</button>
+                  <button className="chip" onClick={() => setView('auth')}>{user ? 'Account' : 'Login / Register'}</button>
+                </div>
+              </div>
+
+              <div className="hero-grid">
+                <div className="hero-card">
+                  <span className="eyebrow">Job Board FOR DEMO CLICK HERE</span>
+                  <h2>Hire faster. Search smarter. Apply in seconds.</h2>
+                  <p>
+                    This demo includes a searchable listings page, a job detail page, secure authentication,
+                    employer posting tools, candidate profile management, resume upload, and notification tracking.
+                  </p>
+                  <div className="hero-actions">
+                    <button className="button primary" onClick={() => setView('listings')}>Explore openings</button>
+                    <button className="button ghost" onClick={() => setView('auth')}>Sign in to post or apply</button>
+                  </div>
+                  <div className="hero-note">
+                    <span className="badge info">Search</span>
+                    <span className="badge success">Applications</span>
+                    <span className="badge warning">Notifications</span>
+                    <span className="badge info">Resume upload</span>
+                  </div>
+                </div>
+
+                <div className="stats">
+                  <div className="stat"><strong>{jobCount}</strong><span>job openings loaded</span></div>
+                  <div className="stat"><strong>{applicationCount}</strong><span>applications in your view</span></div>
+                  <div className="stat"><strong>{notificationCount}</strong><span>unread notifications</span></div>
+                  <div className="stat"><strong>{savedCount}</strong><span>saved jobs</span></div>
+                  <div className="stat"><strong>{user ? user.role : 'Guest'}</strong><span>{user ? user.name : 'Log in to personalize'}</span></div>
+                </div>
+              </div>
+            </section>
+
+            {message ? <div className="alert">{message}</div> : null}
+
+            <div className="tabs">
+              <button className={`tab ${view === 'listings' ? 'active' : ''}`} onClick={() => setView('listings')}>Listings Page</button>
+              <button className={`tab ${view === 'detail' ? 'active' : ''}`} onClick={() => setView('detail')}>Job Detail Page</button>
+              <button className={`tab ${view === 'employer' ? 'active' : ''}`} onClick={() => setView('employer')}>Employer Dashboard</button>
+              <button className={`tab ${view === 'candidate' ? 'active' : ''}`} onClick={() => setView('candidate')}>Candidate Dashboard</button>
+              <button className={`tab ${view === 'saved' ? 'active' : ''}`} onClick={() => setView('saved')}>Saved Jobs</button>
+              <button className={`tab ${view === 'notifications' ? 'active' : ''}`} onClick={() => setView('notifications')}>Notifications</button>
+              <button className={`tab ${view === 'analytics' ? 'active' : ''}`} onClick={() => setView('analytics')}>Analytics</button>
+              <button className={`tab ${view === 'about' ? 'active' : ''}`} onClick={() => setView('about')}>About</button>
+              <button className={`tab ${view === 'contact' ? 'active' : ''}`} onClick={() => setView('contact')}>Contact</button>
+              <button className={`tab ${view === 'auth' ? 'active' : ''}`} onClick={() => setView('auth')}>Authentication</button>
+              <button className="tab" onClick={handleLogout}>Logout</button>
+            </div>
+
+            <div className="layout">
+              <main className="panel">
+                {view === 'listings' ? (
+                  <ListingsPage
+                    jobs={jobs}
+                    search={search}
+                    setSearch={setSearch}
+                    savedJobIds={savedJobIds}
+                    onToggleSaved={toggleSavedJob}
+                    onSelect={(job) => { setSelectedJobId(job._id); setView('detail'); }}
+                    onApply={(job) => { setSelectedJobId(job._id); setView('detail'); }}
+                  />
+                ) : null}
+
+                {view === 'detail' ? (
+                  <DetailPage
+                    job={selectedJob}
+                    user={user}
+                    isSaved={selectedJob ? isSavedJob(selectedJob._id) : false}
+                    onToggleSaved={toggleSavedJob}
+                    onApply={handleApply}
+                    onBack={() => setView('listings')}
+                  />
+                ) : null}
+
+                {view === 'employer' ? (
+                  <EmployerDashboard
+                    user={user}
+                    jobs={jobs.filter((job) => !user || job.employerId === user._id)}
+                    applications={applications}
+                    onPostJob={handlePostJob}
+                    onLogin={() => setView('auth')}
+                  />
+                ) : null}
+
+                {view === 'candidate' ? (
+                  <CandidateDashboard
+                    user={user}
+                    applications={applications}
+                    savedJobs={savedJobs}
+                    onSelectJob={(jobId) => { setSelectedJobId(jobId); setView('detail'); }}
+                    onSaveProfile={handleSaveProfile}
+                    onLogin={() => setView('auth')}
+                  />
+                ) : null}
+
+                {view === 'saved' ? (
+                  <SavedJobsPage
+                    jobs={savedJobs}
+                    onSelect={(job) => { setSelectedJobId(job._id); setView('detail'); }}
+                    onToggleSaved={toggleSavedJob}
+                  />
+                ) : null}
+
+                {view === 'notifications' ? (
+                  <NotificationsCenterPage notifications={notifications} />
+                ) : null}
+
+                {view === 'analytics' ? (
+                  <AnalyticsDashboard
+                    jobs={jobs}
+                    applications={applications}
+                    notifications={notifications}
+                    savedJobs={savedJobs}
+                    user={user}
+                  />
+                ) : null}
+
+                {view === 'about' ? (
+                  <AboutPage />
+                ) : null}
+
+                {view === 'contact' ? (
+                  <ContactPage onSubmitMessage={setMessage} />
+                ) : null}
+
+                {view === 'auth' ? (
+                  <AuthPanel onAuth={handleAuth} demo={DEMO} user={user} />
+                ) : null}
+              </main>
+
+              <aside className="stack">
+                <NotificationsPanel notifications={notifications} />
+                <div className="auth-card">
+                  <div className="section-head">
+                    <div>
+                      <h3>Live demo accounts</h3>
+                      <p>Use these if you want to test posting and applying right away.</p>
+                    </div>
+                  </div>
+                  <div className="stack small">
+                    <div><strong>Employer:</strong> {DEMO.employer.email} / {DEMO.employer.password}</div>
+                    <div><strong>Candidate:</strong> {DEMO.candidate.email} / {DEMO.candidate.password}</div>
+                  </div>
+                  <div className="divider"></div>
+                  <div className="small">
+                    Passwords are hashed on the backend. JWT tokens are stored locally for this demo session.
+                  </div>
+                </div>
+              </aside>
+            </div>
+
+            <div className="footer-note">
+              Built with React on the frontend and Node.js on the backend. MongoDB is used when available, with a demo fallback when it is not.
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function ListingsPage({ jobs, search, setSearch, savedJobIds, onToggleSaved, onSelect, onApply }) {
+      return (
+        <div>
+          <div className="section-head">
+            <div>
+              <h3>Listings Page</h3>
+              <p>Search job openings with the essential details employers care about and candidates need.</p>
+            </div>
+          </div>
+
+          <div className="toolbar">
+            <input
+              className="field"
+              placeholder="Search for role, company, location, or skill"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
+          </div>
+
+          <div className="divider"></div>
+
+          <div className="jobs-grid">
+            {jobs.length ? jobs.map((job) => (
+              <article className="job-card" key={job._id}>
+                <div className="job-top">
+                  <div>
+                    <h4 className="job-title">{job.title}</h4>
+                    <div className="small">{job.company} • {job.location}</div>
+                  </div>
+                  <span className="badge info">{job.type || 'Full-time'}</span>
+                </div>
+                <div className="pill-row">
+                  <span className="pill">{job.category || 'General'}</span>
+                  <span className="pill">{job.salary || 'Salary on request'}</span>
+                </div>
+                <div className="small">{job.description}</div>
+                <div className="job-actions">
+                  <button className="mini primary" onClick={() => onSelect(job)}>View Detail</button>
+                  <button className="mini ghost" onClick={() => onApply(job)}>Apply</button>
+                  <button className="mini ghost" onClick={() => onToggleSaved(job._id)}>
+                    {savedJobIds.includes(job._id) ? 'Unsave' : 'Save'}
+                  </button>
+                </div>
+              </article>
+            )) : (
+              <div className="notice-card">No matching jobs found. Try a different search term.</div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    function DetailPage({ job, user, isSaved, onToggleSaved, onApply, onBack }) {
+      const [form, setForm] = useState({
+        applicantName: user?.name || '',
+        applicantEmail: user?.email || '',
+        coverLetter: '',
+        resume: null
+      });
+      const [status, setStatus] = useState('');
+
+      useEffect(() => {
+        setForm((current) => ({
+          ...current,
+          applicantName: user?.name || current.applicantName,
+          applicantEmail: user?.email || current.applicantEmail
+        }));
+      }, [user, job]);
+
+      if (!job) {
+        return <div className="notice-card">Select a job from the listings to open the detail page.</div>;
+      }
+
+      const submit = async (event) => {
+        event.preventDefault();
+        setStatus('Submitting application...');
+        try {
+          await onApply(job._id, form);
+          setStatus('Application submitted successfully. Email notification queued.');
+          setForm((current) => ({ ...current, coverLetter: '', resume: null }));
+        } catch (error) {
+          setStatus(error.message);
+        }
+      };
+
+      return (
+        <div>
+          <div className="section-head">
+            <div>
+              <h3>Job Detail Page</h3>
+              <p>Review the full posting and submit an application with your resume.</p>
+            </div>
+            <button className="chip" onClick={onBack}>Back to listings</button>
+          </div>
+
+          <div className="detail-card">
+            <div className="job-top">
+              <div>
+                <h2 style={{ margin: '0 0 8px' }}>{job.title}</h2>
+                <div className="small">{job.company} • {job.location} • {job.type || 'Full-time'}</div>
+              </div>
+              <span className="badge success">{job.salary || 'Competitive'}</span>
+            </div>
+
+            <div className="pill-row">
+              <span className="pill">{job.category || 'General'}</span>
+              <span className="pill">Posted by {job.employerName || 'Employer'}</span>
+            </div>
+
+            <div className="detail-meta">{job.description}</div>
+
+            <div className="divider"></div>
+
+            <form className="stack" onSubmit={submit}>
+              <div className="grid-2">
+                <input
+                  className="field"
+                  placeholder="Your name"
+                  value={form.applicantName}
+                  onChange={(event) => setForm({ ...form, applicantName: event.target.value })}
+                  required
+                />
+                <input
+                  className="field"
+                  placeholder="Your email"
+                  value={form.applicantEmail}
+                  onChange={(event) => setForm({ ...form, applicantEmail: event.target.value })}
+                  required
+                />
+              </div>
+              <textarea
+                className="textarea"
+                placeholder="Why are you a good fit?"
+                value={form.coverLetter}
+                onChange={(event) => setForm({ ...form, coverLetter: event.target.value })}
+              />
+              <input
+                className="field"
+                type="file"
+                onChange={(event) => setForm({ ...form, resume: event.target.files[0] || null })}
+              />
+              {form.resume ? <div className="resume">Resume ready: {form.resume.name}</div> : null}
+              <div className="row-actions">
+                <button className="button primary" type="submit">Submit Application</button>
+                <button className="button ghost" type="button" onClick={() => onToggleSaved(job._id)}>
+                  {isSaved ? 'Remove from saved jobs' : 'Save job'}
+                </button>
+              </div>
+              {status ? <div className="small">{status}</div> : null}
+            </form>
+          </div>
+        </div>
+      );
+    }
+
+    function EmployerDashboard({ user, jobs, applications, onPostJob, onLogin }) {
+      const [form, setForm] = useState({
+        title: '',
+        company: '',
+        location: '',
+        type: 'Full-time',
+        salary: '',
+        category: 'General',
+        description: ''
+      });
+      const [status, setStatus] = useState('');
+
+      const submit = async (event) => {
+        event.preventDefault();
+        setStatus('Posting job...');
+        try {
+          await onPostJob(form);
+          setStatus('Job posted successfully.');
+          setForm({ title: '', company: '', location: '', type: 'Full-time', salary: '', category: 'General', description: '' });
+        } catch (error) {
+          setStatus(error.message);
+        }
+      };
+
+      if (!user || user.role !== 'employer') {
+        return (
+          <div className="auth-card">
+            <div className="section-head">
+              <div>
+                <h3>Employer Dashboard</h3>
+                <p>Account management, job posting, and application tracking live here.</p>
+              </div>
+            </div>
+            <div className="notice-card">
+              Please log in as an employer to post jobs and manage applications.
+            </div>
+            <div className="row-actions">
+              <button className="button primary" onClick={onLogin}>Go to login</button>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div>
+          <div className="section-head">
+            <div>
+              <h3>Employer Dashboard</h3>
+              <p>Manage your account, post openings, and review applications.</p>
+            </div>
+          </div>
+
+          <div className="detail-card" style={{ marginBottom: 14 }}>
+            <div className="grid-3">
+              <div className="stat"><strong>{jobs.length}</strong><span>jobs posted</span></div>
+              <div className="stat"><strong>{applications.length}</strong><span>applications received</span></div>
+              <div className="stat"><strong>{user.location || 'Remote'}</strong><span>account location</span></div>
+            </div>
+          </div>
+
+          <div className="detail-card" style={{ marginBottom: 14 }}>
+            <h3 style={{ marginTop: 0 }}>Post New Job</h3>
+            <form className="stack" onSubmit={submit}>
+              <div className="grid-2">
+                <input className="field" placeholder="Title" value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} required />
+                <input className="field" placeholder="Company" value={form.company} onChange={(event) => setForm({ ...form, company: event.target.value })} required />
+              </div>
+              <div className="grid-3">
+                <input className="field" placeholder="Location" value={form.location} onChange={(event) => setForm({ ...form, location: event.target.value })} required />
+                <select className="select" value={form.type} onChange={(event) => setForm({ ...form, type: event.target.value })}>
+                  <option>Full-time</option>
+                  <option>Part-time</option>
+                  <option>Hybrid</option>
+                  <option>On-site</option>
+                  <option>Remote</option>
+                </select>
+                <input className="field" placeholder="Salary" value={form.salary} onChange={(event) => setForm({ ...form, salary: event.target.value })} />
+              </div>
+              <div className="grid-2">
+                <input className="field" placeholder="Category" value={form.category} onChange={(event) => setForm({ ...form, category: event.target.value })} />
+                <input className="field" value={user.email} readOnly />
+              </div>
+              <textarea className="textarea" placeholder="Description" value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} required />
+              <button className="button primary" type="submit">Publish job</button>
+              {status ? <div className="small">{status}</div> : null}
+            </form>
+          </div>
+
+          <div className="detail-card">
+            <h3 style={{ marginTop: 0 }}>Your Jobs</h3>
+            <div className="stack">
+              {jobs.length ? jobs.map((job) => (
+                <div className="notice-card" key={job._id}>
+                  <div className="job-top">
+                    <div>
+                      <strong>{job.title}</strong>
+                      <div className="small">{job.company} • {job.location}</div>
+                    </div>
+                    <span className="badge info">{job.type}</span>
+                  </div>
+                  <div className="small">{job.description}</div>
+                </div>
+              )) : <div className="notice-card">No jobs posted yet.</div>}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function CandidateDashboard({ user, applications, savedJobs, onSelectJob, onSaveProfile, onLogin }) {
+      const [form, setForm] = useState({
+        name: user?.name || '',
+        bio: user?.bio || '',
+        skills: (user?.skills || []).join(', '),
+        location: user?.location || ''
+      });
+      const [status, setStatus] = useState('');
+
+      useEffect(() => {
+        setForm({
+          name: user?.name || '',
+          bio: user?.bio || '',
+          skills: (user?.skills || []).join(', '),
+          location: user?.location || ''
+        });
+      }, [user]);
+
+      const submit = async (event) => {
+        event.preventDefault();
+        setStatus('Saving profile...');
+        try {
+          await onSaveProfile(form);
+          setStatus('Profile updated successfully.');
+        } catch (error) {
+          setStatus(error.message);
+        }
+      };
+
+      if (!user || user.role !== 'candidate') {
+        return (
+          <div className="auth-card">
+            <div className="section-head">
+              <div>
+                <h3>Candidate Dashboard</h3>
+                <p>Profile management and job applications live here.</p>
+              </div>
+            </div>
+            <div className="notice-card">
+              Please log in as a candidate to manage your profile and view applications.
+            </div>
+            <div className="row-actions">
+              <button className="button primary" onClick={onLogin}>Go to login</button>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div>
+          <div className="section-head">
+            <div>
+              <h3>Candidate Dashboard</h3>
+              <p>Manage your profile, upload resume details, and monitor applications.</p>
+            </div>
+          </div>
+
+          <div className="detail-card" style={{ marginBottom: 14 }}>
+            <div className="grid-3">
+              <div className="stat"><strong>{user.name}</strong><span>candidate profile</span></div>
+              <div className="stat"><strong>{applications.length}</strong><span>applications submitted</span></div>
+              <div className="stat"><strong>{user.location || 'Open to work'}</strong><span>preferred location</span></div>
+            </div>
+          </div>
+
+          <div className="detail-card" style={{ marginBottom: 14 }}>
+            <h3 style={{ marginTop: 0 }}>Profile Management</h3>
+            <form className="stack" onSubmit={submit}>
+              <div className="grid-2">
+                <input className="field" placeholder="Full name" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} required />
+                <input className="field" placeholder="Location" value={form.location} onChange={(event) => setForm({ ...form, location: event.target.value })} />
+              </div>
+              <textarea className="textarea" placeholder="Short bio" value={form.bio} onChange={(event) => setForm({ ...form, bio: event.target.value })} />
+              <input className="field" placeholder="Skills separated by commas" value={form.skills} onChange={(event) => setForm({ ...form, skills: event.target.value })} />
+              <button className="button primary" type="submit">Save profile</button>
+              {status ? <div className="small">{status}</div> : null}
+            </form>
+          </div>
+
+          <div className="detail-card">
+            <h3 style={{ marginTop: 0 }}>Application History</h3>
+            <div className="stack">
+              {applications.length ? applications.map((application) => (
+                <div className="notice-card" key={application._id}>
+                  <strong>{application.applicantName}</strong>
+                  <div className="small">Applied for job ID: {application.jobId}</div>
+                  <div className="small">Status: {application.status}</div>
+                  {application.resumeName ? <div className="resume">Resume: {application.resumeName}</div> : null}
+                </div>
+              )) : <div className="notice-card">No applications yet. Use the listings page to apply.</div>}
+            </div>
+          </div>
+
+          <div className="detail-card" style={{ marginTop: 14 }}>
+            <h3 style={{ marginTop: 0 }}>Saved Jobs</h3>
+            <div className="stack">
+              {savedJobs.length ? savedJobs.map((job) => (
+                <div className="notice-card" key={job._id}>
+                  <strong>{job.title}</strong>
+                  <div className="small">{job.company} • {job.location}</div>
+                  <div className="row-actions">
+                    <button className="mini primary" onClick={() => onSelectJob(job._id)}>Open</button>
+                  </div>
+                </div>
+              )) : <div className="notice-card">No saved jobs yet. Save some from the listings page.</div>}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function SavedJobsPage({ jobs, onSelect, onToggleSaved }) {
+      return (
+        <div>
+          <div className="section-head">
+            <div>
+              <h3>Saved Jobs Page</h3>
+              <p>Keep track of openings you want to revisit later.</p>
+            </div>
+          </div>
+
+          <div className="jobs-grid">
+            {jobs.length ? jobs.map((job) => (
+              <article className="job-card" key={job._id}>
+                <div className="job-top">
+                  <div>
+                    <h4 className="job-title">{job.title}</h4>
+                    <div className="small">{job.company} • {job.location}</div>
+                  </div>
+                  <span className="badge warning">Saved</span>
+                </div>
+                <div className="small">{job.description}</div>
+                <div className="job-actions">
+                  <button className="mini primary" onClick={() => onSelect(job)}>View Detail</button>
+                  <button className="mini ghost" onClick={() => onToggleSaved(job._id)}>Unsave</button>
+                </div>
+              </article>
+            )) : (
+              <div className="notice-card">You have no saved jobs yet.</div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    function NotificationsCenterPage({ notifications }) {
+      return (
+        <div>
+          <div className="section-head">
+            <div>
+              <h3>Notifications Center</h3>
+              <p>A full-page view for application updates and email-ready notifications.</p>
+            </div>
+          </div>
+
+          <div className="notice-list">
+            {notifications.length ? notifications.map((item) => (
+              <div className={`notice-card ${item.read ? '' : 'unread'}`} key={item._id}>
+                <div className="job-top">
+                  <span className={`badge ${item.type || 'info'}`}>{item.type || 'info'}</span>
+                  <span className="small">{new Date(item.createdAt).toLocaleString()}</span>
+                </div>
+                <div>{item.message}</div>
+              </div>
+            )) : (
+              <div className="notice-card">No notifications available. Apply to jobs or post a job to generate updates.</div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    function AnalyticsDashboard({ jobs, applications, notifications, savedJobs, user }) {
+      const byType = jobs.reduce((acc, job) => {
+        const key = job.type || 'Full-time';
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      }, {});
+
+      return (
+        <div>
+          <div className="section-head">
+            <div>
+              <h3>Analytics Dashboard</h3>
+              <p>Quick insight view for recruiters and hiring managers.</p>
+            </div>
+          </div>
+
+          <div className="grid-3" style={{ marginBottom: 14 }}>
+            <div className="stat"><strong>{jobs.length}</strong><span>active job posts</span></div>
+            <div className="stat"><strong>{applications.length}</strong><span>total applications</span></div>
+            <div className="stat"><strong>{savedJobs.length}</strong><span>saved jobs</span></div>
+          </div>
+
+          <div className="detail-card" style={{ marginBottom: 14 }}>
+            <h3 style={{ marginTop: 0 }}>Job Mix</h3>
+            <div className="stack">
+              {Object.keys(byType).length ? Object.entries(byType).map(([type, count]) => (
+                <div className="notice-card" key={type}>
+                  <strong>{type}</strong>
+                  <div className="small">{count} openings</div>
+                </div>
+              )) : <div className="notice-card">No job data yet.</div>}
+            </div>
+          </div>
+
+          <div className="detail-card">
+            <h3 style={{ marginTop: 0 }}>Audience Snapshot</h3>
+            <div className="stack small">
+              <div><strong>User:</strong> {user ? `${user.name} (${user.role})` : 'Guest'}</div>
+              <div><strong>Unread notifications:</strong> {notifications.filter((item) => !item.read).length}</div>
+              <div><strong>Demo status:</strong> ready for hosting or GitLab handoff</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function AboutPage() {
+      return (
+        <div>
+          <div className="section-head">
+            <div>
+              <h3>About This Job Board</h3>
+              <p>A multi-page demo built for employers and job seekers.</p>
+            </div>
+          </div>
+
+          <div className="detail-card">
+            <div className="stack small">
+              <div>Built with React, Node.js, Express, MongoDB-ready data models, and a secure auth flow.</div>
+              <div>Includes responsive layouts, search, detail pages, dashboards, resume upload, and notifications.</div>
+              <div>Uses a demo fallback store when MongoDB is unavailable so the website still works locally.</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function ContactPage({ onSubmitMessage }) {
+      const [form, setForm] = useState({ name: '', email: '', message: '' });
+      const [status, setStatus] = useState('');
+
+      const submit = (event) => {
+        event.preventDefault();
+        onSubmitMessage('Thanks for reaching out. We received your message.');
+        setStatus('Message sent successfully.');
+        setForm({ name: '', email: '', message: '' });
+      };
+
+      return (
+        <div>
+          <div className="section-head">
+            <div>
+              <h3>Contact Page</h3>
+              <p>Simple built-in contact form for demo communication.</p>
+            </div>
+          </div>
+
+          <div className="detail-card">
+            <form className="stack" onSubmit={submit}>
+              <div className="grid-2">
+                <input className="field" placeholder="Your name" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} required />
+                <input className="field" placeholder="Your email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} required />
+              </div>
+              <textarea className="textarea" placeholder="How can we help?" value={form.message} onChange={(event) => setForm({ ...form, message: event.target.value })} required />
+              <button className="button primary" type="submit">Send message</button>
+              {status ? <div className="small">{status}</div> : null}
+            </form>
+          </div>
+        </div>
+      );
+    }
+
+    function AuthPanel({ onAuth, demo, user }) {
+      const [mode, setMode] = useState('login');
+      const [status, setStatus] = useState('');
+      const [form, setForm] = useState({
+        name: '',
+        email: demo.candidate.email,
+        password: demo.candidate.password,
+        role: 'candidate'
+      });
+
+      const submit = async (event) => {
+        event.preventDefault();
+        setStatus(mode === 'login' ? 'Signing in...' : 'Creating account...');
+        try {
+          await onAuth({ mode, payload: form });
+          setStatus(mode === 'login' ? 'Signed in.' : 'Account created.');
+        } catch (error) {
+          setStatus(error.message);
+        }
+      };
+
+      return (
+        <div className="auth-card">
+          <div className="section-head">
+            <div>
+              <h3>User Authentication and Security</h3>
+              <p>Passwords are hashed on the server and access is secured with JWT tokens.</p>
+            </div>
+          </div>
+
+          <div className="tabs" style={{ marginTop: 0 }}>
+            <button className={`tab ${mode === 'login' ? 'active' : ''}`} onClick={() => setMode('login')}>Login</button>
+            <button className={`tab ${mode === 'register' ? 'active' : ''}`} onClick={() => setMode('register')}>Register</button>
+          </div>
+
+          <form className="stack" onSubmit={submit} style={{ marginTop: 16 }}>
+            {mode === 'register' ? (
+              <input className="field" placeholder="Full name" value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} required />
+            ) : null}
+            <div className="grid-2">
+              <input className="field" placeholder="Email" value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} required />
+              <input className="field" type="password" placeholder="Password" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} required />
+            </div>
+            {mode === 'register' ? (
+              <select className="select" value={form.role} onChange={(event) => setForm({ ...form, role: event.target.value })}>
+                <option value="candidate">Candidate</option>
+                <option value="employer">Employer</option>
+              </select>
+            ) : null}
+            <button className="button primary" type="submit">{mode === 'login' ? 'Login' : 'Create account'}</button>
+            {status ? <div className="small">{status}</div> : null}
+            {user ? <div className="small success">Signed in as {user.name} ({user.role})</div> : null}
+          </form>
+        </div>
+      );
+    }
+
+    function NotificationsPanel({ notifications }) {
+      return (
+        <div className="notice-card">
+          <div className="section-head">
+            <div>
+              <h3>Email Notifications</h3>
+              <p>Successful applications and updates are tracked here.</p>
+            </div>
+          </div>
+
+          <div className="notice-list">
+            {notifications.length ? notifications.map((item) => (
+              <div className={`notice-card ${item.read ? '' : 'unread'}`} key={item._id}>
+                <div className="job-top">
+                  <span className={`badge ${item.type || 'info'}`}>{item.type || 'info'}</span>
+                  <span className="small">{new Date(item.createdAt).toLocaleString()}</span>
+                </div>
+                <div>{item.message}</div>
+              </div>
+            )) : (
+              <div className="small">No notifications yet. Login and apply to see application alerts.</div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
